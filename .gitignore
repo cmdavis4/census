@@ -1,2 +1,8 @@
+.DS_store
 asec2016_dd.txt
 asec2016_pubuse_v2.dat
+headway_auth.py
+__pycache__
+*.pyc
+.idea/*
+.ipynb_checkpoints/*

@@ -65,3 +65,21 @@ def read_asec_dictionary(filename):
         
     return unit_dict
 
+def read_asec_data(data_filename, data_dictionary_filename, unit_type, field_list, limit=None):
+    dd = read_asec_dictionary(data_dictionary_filename)
+    with open(data_filename) as f:
+        counter = 0
+        records = []
+        for line in f:
+            if limit is not None and counter > limit:
+                break
+            this_record = {}
+            if dd['first_digit'][line[0]] == unit_type:
+                for field_name in field_list:
+                    field_dict = dd[unit_type][field_name]
+                    begin = field_dict['begin']
+                    size = field_dict['size']
+                    this_record[field_name] = line[begin-1:begin-1+size] # -1 for 1-indexing
+                records.append(this_record)
+            counter += 1
+    return records
