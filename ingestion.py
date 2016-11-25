@@ -1,3 +1,5 @@
+import pandas as pd
+
 def read_asec_dictionary(filename):
     import re
     re.MULTILINE = True
@@ -65,8 +67,10 @@ def read_asec_dictionary(filename):
         
     return unit_dict
 
-def read_asec_data(data_filename, data_dictionary_filename, unit_type, field_list, limit=None):
+def read_asec_data(data_filename, data_dictionary_filename, unit_type, field_list,
+                   as_df=False, limit=None):
     dd = read_asec_dictionary(data_dictionary_filename)
+    field_list = [x.upper() for x in field_list]
     with open(data_filename) as f:
         counter = 0
         records = []
@@ -79,7 +83,15 @@ def read_asec_data(data_filename, data_dictionary_filename, unit_type, field_lis
                     field_dict = dd[unit_type][field_name]
                     begin = field_dict['begin']
                     size = field_dict['size']
-                    this_record[field_name] = line[begin-1:begin-1+size] # -1 for 1-indexing
+                    value = line[begin-1:begin-1+size] # -1 for 1-indexing
+                    if field_name in ['HSUP_WGT', 'FSUP_WGT', 'A_FNLWGT', 'A_ERNLWT', 'MARSUPWT', 'A_HRSPAY']:
+                        value = float(value)/100
+                    else:
+                        value = int(value)
+                    this_record[field_name.lower()] = value
                 records.append(this_record)
             counter += 1
-    return records
+    if as_df:
+        return pd.DataFrame(records)
+    else:
+        return records
