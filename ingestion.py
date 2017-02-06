@@ -17,6 +17,9 @@ def read_asec_dictionary(filename):
     with open(filename) as f:
         data = f.read()
 
+    # Since they apparently don't feel that they should maintain the same linebreak character between versions,
+    # we'll strip all the carriage returns to be safe
+    data = data.replace('\r', '')
     units = re.split('([a-zA-Z]*) RECORD', data)[1:]
     unit_dict = {'first_digit': {}}
     for i in range(0, len(units), 2):
