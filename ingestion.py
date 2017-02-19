@@ -4,12 +4,27 @@ import numpy as np
 def read_asec_dictionary(filename):
     '''
     Function to parse the data dictionary text file for the 2016 March ASEC supplement to the US census. The object
-    returned is a dict
+    returned is a dict with keys ['person', 'household', 'family', and 'first_digit']. The entry for 'first_digit' is
+    just a mapping that read_asec_dict uses to assign a record to the right unit type. The other three entries contain
+    dicts, the general form of which is:
+    {field mnemonic:
+        {'name': str, name of the field,
+         'description': str, description of the field,
+         'begin': int, character index of the start of this field,
+         'size': int, number of characters constituting the value for this field,
+         'range': str, of form '(<int>:<int>)', the possible values of the field,
+         'universe': str, description of the universe for which this field applies,
+         'values':
+            {str, possible field value: str, meaning of that value}
+        }
+    }
+
+    In general, this is just used in read_asec_data; there's not much reason for an end-user to touch this.
 
     File URl: http://thedataweb.rm.census.gov/pub/cps/march/Asec2016_Data_Dict_Full.txt
     Documentation: http://www2.census.gov/programs-surveys/cps/techdocs/cpsmar16.pdf
-    :param filename:
-    :return:
+    :param filename: str, path to the data dictionary file (usually <path to your repo>/data/asec2016_dd.txt)
+    :return: dict, see above
     '''
     import re
     re.MULTILINE = True
@@ -82,6 +97,16 @@ def read_asec_dictionary(filename):
 
 def read_asec_data(data_filename, data_dictionary_filename, unit_type, field_list,
                    as_df=False, limit=None):
+    '''
+
+    :param data_filename: str, path to the data dictionary file (usually <path to your repo>/data/asec2016_dd.txt)
+    :param data_dictionary_filename: str, path to the data dictionary file (usually <path to your repo>/data/asec2016_pubuse_v3.dat)
+    :param unit_type: str, one of ['household, 'person', 'family']
+    :param field_list: list[str], list of field mnemonics to be included in the returned dataframe
+    :param as_df: boolean, return pd.DataFrame if True, else list[dict]
+    :param limit: int, limit on number of records to return
+    :return: pd.DataFrame or list[dict], see as_df
+    '''
     dd = read_asec_dictionary(data_dictionary_filename)
     field_list = [x.upper() for x in field_list]
     with open(data_filename) as f:
